@@ -14,7 +14,7 @@ public class PlayerDashStates : PlayerStates
     {
         base.Enter();
 
-        // 从 WallJump 转来时，"Jump" 动画 bool 没有被清除（WallJump.Exist 跳过了 base.Exist）
+        // 从 WallJump 转来时，"Jump" 动画 bool 没有被清除（WallJump.Exit 跳过了 base.Exit）
         // 必须手动关掉，否则动画机会卡在 Jump/坠落动画上不播放 Dash
         player.anim.SetBool("Jump", false);
 
@@ -30,9 +30,9 @@ public class PlayerDashStates : PlayerStates
         ghostSpawnCounter = 0;
     }
 
-    public override void Exist()
+    public override void Exit()
     {
-        base.Exist();
+        base.Exit();
 
         player.SetVelocity(0, rb.velocity.y);
     }
@@ -47,11 +47,7 @@ public class PlayerDashStates : PlayerStates
         ghostSpawnCounter++;
         if (ghostSpawnCounter % 3 == 0 && player.sr != null && player.sr.sprite != null)
         {
-            GameObject ghost = new GameObject("DashGhost");
-            ghost.transform.position = player.sr.transform.position;
-            ghost.transform.rotation = Quaternion.identity;
-            ghost.transform.localScale = Vector3.one;
-            ghost.AddComponent<GhostTrail>().Init(player.sr, player.Facedir);
+            GhostTrail.Spawn(player.sr, player.Facedir);
         }
 
         if (statestime < 0)

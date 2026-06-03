@@ -14,9 +14,9 @@ public class PlayerAirStates : PlayerStates
         base.Enter();
     }
 
-    public override void Exist()
+    public override void Exit()
     {
-        base.Exist();
+        base.Exit();
         player.SetVelocity(0, rb.velocity.y);
     }
 
@@ -29,7 +29,7 @@ public class PlayerAirStates : PlayerStates
             statemachine.ChangeStates(player.WallSlideStates);
         }
 
-        // ÔÚ¿ÕÖÐÊ±£¬ÔÊÐíË®Æ½ÒÆ¶¯
+        // ï¿½Ú¿ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë®Æ½ï¿½Æ¶ï¿½
         if(Xinput != 0)
             player.SetVelocity(Xinput * player.MoveSpeed * .8f, rb.velocity.y);
 

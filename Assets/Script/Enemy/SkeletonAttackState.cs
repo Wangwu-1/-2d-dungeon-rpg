@@ -5,9 +5,6 @@ public class SkeletonAttackState : EnemyState
     private SkeletonEnemy skeleton;
     private bool hasDealtDamage;
 
-    [Header("Attack Hitbox")]
-    [SerializeField] private float attackRadius = 1.5f;
-
     public SkeletonAttackState(Enemy _enemy, EnemyStateMachine _stateMachine, string _animBoolName)
         : base(_enemy, _stateMachine, _animBoolName)
     {
@@ -44,8 +41,8 @@ public class SkeletonAttackState : EnemyState
 
     private void ApplyAttackDamage()
     {
-        Vector2 attackPos = (Vector2)skeleton.transform.position + Vector2.right * skeleton.facingDir * attackRadius * 0.5f;
-        Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(attackPos, attackRadius);
+        Vector2 attackPos = (Vector2)skeleton.transform.position + Vector2.right * skeleton.facingDir * skeleton.attackRadius * 0.5f;
+        Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(attackPos, skeleton.attackRadius);
         foreach (Collider2D hit in hitPlayers)
         {
             if (hit.CompareTag("Player"))

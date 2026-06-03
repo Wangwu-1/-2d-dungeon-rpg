@@ -10,10 +10,6 @@ public class PlayerPrimaryAttack : PlayerStates
     private float LastTimeAttack;
     private float   combowindow = 2;
 
-    [Header("Attack Hitbox")]
-    [SerializeField] private float attackRadius = 2.5f;
-
-
     public PlayerPrimaryAttack(Player _player, PlayerStatesMachine _statemachine, string _animBoolName) : base(_player, _statemachine, _animBoolName)
     {
     }
@@ -35,9 +31,9 @@ public class PlayerPrimaryAttack : PlayerStates
 
     }
 
-    public override void Exist()
+    public override void Exit()
     {
-        base.Exist();
+        base.Exit();
 
         comboCounter++;
         LastTimeAttack = Time.time;
@@ -63,9 +59,9 @@ public class PlayerPrimaryAttack : PlayerStates
     private void ApplyAttackDamage()
     {
         Vector2 attackPos = (Vector2)player.transform.position + Vector2.right * player.Facedir * 1.2f;
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPos, attackRadius);
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPos, player.attackRadius);
 
-        Debug.Log("Attack check at " + attackPos + " radius " + attackRadius + " found " + hitEnemies.Length + " colliders");
+        Debug.Log("Attack check at " + attackPos + " radius " + player.attackRadius + " found " + hitEnemies.Length + " colliders");
 
         bool hitSomething = false;
         foreach (Collider2D hit in hitEnemies)

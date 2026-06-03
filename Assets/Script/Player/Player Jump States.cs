@@ -14,9 +14,9 @@ public class PlayerJumpStates : PlayerAirStates
         rb.velocity = new Vector2(rb.velocity.x, player.Jumpforce);
     }
 
-    public override void Exist()
+    public override void Exit()
     {
-        base.Exist();
+        base.Exit();
     }
 
     public override void Update()

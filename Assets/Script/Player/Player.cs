@@ -16,6 +16,13 @@ public class Player : MonoBehaviour
     [HideInInspector] public bool isInvincible { get; private set; }
     public bool isDead { get; private set; }
 
+    [Header("Attack")]
+    public float attackRadius = 2.5f;
+
+    [Header("Knockback")]
+    public float knockbackForceX = 5f;
+    public float knockbackForceY = 3f;
+
     [Header("Screen Shake")]
     [SerializeField] private CinemachineImpulseSource impulseSource;
 

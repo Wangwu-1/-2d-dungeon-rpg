@@ -17,6 +17,7 @@ public class SkeletonEnemy : Enemy
     public float stunDuration = 0.5f;
     public float knockbackForceX = 5f;
     public float knockbackForceY = 3f;
+    public float attackRadius = 1.5f;
 
     protected override void Awake()
     {

@@ -13,9 +13,9 @@ public class PlayerGroundStates : PlayerStates
         base.Enter();
     }
 
-    public override void Exist()
+    public override void Exit()
     {
-        base.Exist();
+        base.Exit();
     }
 
     public override void Update()

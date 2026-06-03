@@ -2,9 +2,6 @@ using UnityEngine;
 
 public class PlayerHitState : PlayerStates
 {
-    private float knockbackForceX = 5f;
-    private float knockbackForceY = 3f;
-
     public PlayerHitState(Player _player, PlayerStatesMachine _statemachine, string _animBoolName)
         : base(_player, _statemachine, _animBoolName)
     {
@@ -12,13 +9,12 @@ public class PlayerHitState : PlayerStates
 
     public override void Enter()
     {
-        rb = player.rb;
-        triggerCalled = false;
+        base.Enter();
         statestime = 0.3f;
 
         // Knockback in the attack direction (away from attacker)
         float dir = player.lastHitKnockbackDirX;
-        player.rb.velocity = new Vector2(dir * knockbackForceX, knockbackForceY);
+        player.rb.velocity = new Vector2(dir * player.knockbackForceX, player.knockbackForceY);
         player.StartCoroutine(player.BusyFor(0.3f));
 
         // Flash sprite red
@@ -39,9 +35,9 @@ public class PlayerHitState : PlayerStates
         }
     }
 
-    public override void Exist()
+    public override void Exit()
     {
-        base.Exist();
+        base.Exit();
         if (player.sr != null)
             player.sr.color = Color.white;
     }

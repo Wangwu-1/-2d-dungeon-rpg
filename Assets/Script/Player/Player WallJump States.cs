@@ -18,9 +18,9 @@ public class PlayerWallJumpStates : PlayerStates
 
     }
 
-    public override void Exist()
+    public override void Exit()
     {
-        // Don't call base.Exist() — that would SetBool("Jump", false) and cause
+        // Don't call base.Exit() — that would SetBool("Jump", false) and cause
         // a one-frame flicker before AirStates sets it back to true.
     }
 

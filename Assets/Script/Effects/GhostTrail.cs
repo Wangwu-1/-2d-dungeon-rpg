@@ -1,31 +1,71 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class GhostTrail : MonoBehaviour
 {
-    private SpriteRenderer targetSr;
+    private static Queue<GameObject> pool = new Queue<GameObject>();
+    private static Transform poolRoot;
+
     private SpriteRenderer ghostSr;
-    private Color startColor;
+    private SpriteRenderer targetSr;
     private float fadeDuration = 0.3f;
+
+    public static void Spawn(SpriteRenderer source, int facedir)
+    {
+        GameObject go = GetFromPool();
+        go.transform.position = source.transform.position;
+        go.transform.rotation = Quaternion.identity;
+        go.transform.localScale = Vector3.one;
+        go.SetActive(true);
+        go.GetComponent<GhostTrail>().Init(source, facedir);
+    }
+
+    private static GameObject GetFromPool()
+    {
+        if (pool.Count > 0)
+        {
+            GameObject go = pool.Dequeue();
+            if (go != null) return go;
+        }
+
+        if (poolRoot == null)
+            poolRoot = new GameObject("GhostPool").transform;
+
+        var go2 = new GameObject("DashGhost");
+        go2.AddComponent<SpriteRenderer>();
+        go2.AddComponent<GhostTrail>();
+        go2.transform.SetParent(poolRoot);
+        return go2;
+    }
+
+    private static void ReturnToPool(GameObject go)
+    {
+        go.SetActive(false);
+        pool.Enqueue(go);
+    }
+
+    public static void ClearPool()
+    {
+        foreach (var go in pool)
+            Destroy(go);
+        pool.Clear();
+    }
 
     public void Init(SpriteRenderer source, int facedir)
     {
         targetSr = source;
         ghostSr = GetComponent<SpriteRenderer>();
-        if (ghostSr == null)
-            ghostSr = gameObject.AddComponent<SpriteRenderer>();
 
         ghostSr.sprite = targetSr.sprite;
         ghostSr.sortingOrder = targetSr.sortingOrder + 1;
 
-        // 父物体用 Rotate(0,180,0) 翻转，残影是根物体没有父级旋转
-        // 需要手动处理 flipX：面朝左时反转 flipX
         ghostSr.flipX = targetSr.flipX;
         if (facedir == -1)
             ghostSr.flipX = !ghostSr.flipX;
 
-        startColor = targetSr.color;
-        startColor.a = 0.4f;
-        ghostSr.color = startColor;
+        Color c = targetSr.color;
+        c.a = 0.4f;
+        ghostSr.color = c;
 
         StartCoroutine(FadeOut());
     }
@@ -42,6 +82,6 @@ public class GhostTrail : MonoBehaviour
             ghostSr.color = c;
             yield return null;
         }
-        Destroy(gameObject);
+        ReturnToPool(gameObject);
     }
 }

@@ -49,7 +49,7 @@ public class PlayerStates
     }
 
     
-    public virtual void Exist()
+    public virtual void Exit()
     {
         if (!string.IsNullOrEmpty(animBoolName))
             player.anim.SetBool(animBoolName, false);
