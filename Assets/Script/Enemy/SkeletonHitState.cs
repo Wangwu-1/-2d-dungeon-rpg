@@ -44,9 +44,4 @@ public class SkeletonHitState : EnemyState
                 stateMachine.ChangeState(skeleton.idleState);
         }
     }
-
-    public override void Exit()
-    {
-        base.Exit();
-    }
 }

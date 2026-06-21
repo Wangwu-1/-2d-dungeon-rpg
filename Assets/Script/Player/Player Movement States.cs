@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMovementStates : PlayerGroundStates
@@ -8,23 +6,17 @@ public class PlayerMovementStates : PlayerGroundStates
     {
     }
 
-    public override void Enter()
-    {
-        base.Enter();
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
-    }
-
     public override void Update()
     {
         base.Update();
 
-        player.SetVelocity(Xinput * player.MoveSpeed, rb.velocity.y);
+        // 指数加减速：有输入就加速到目标速度，松手就减速到停
+        float targetX = Xinput * player.MoveSpeed;
+        float rate = Xinput != 0 ? player.accelerationRate : player.decelerationRate;
+        player.SetVelocityXExponential(targetX, rate);
 
-        if (Xinput == 0)
+        // 松手后速度趋近 0 才切 Idle，避免急停
+        if (Xinput == 0 && Mathf.Abs(player.rb.velocity.x) < 0.05f)
             statemachine.ChangeStates(player.idleStates);
 
     }

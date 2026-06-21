@@ -42,7 +42,8 @@ public class SkeletonAttackState : EnemyState
     private void ApplyAttackDamage()
     {
         Vector2 attackPos = (Vector2)skeleton.transform.position + Vector2.right * skeleton.facingDir * skeleton.attackRadius * 0.5f;
-        Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(attackPos, skeleton.attackRadius);
+        int playerLayer = LayerMask.GetMask("Default");
+        Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(attackPos, skeleton.attackRadius, playerLayer);
         foreach (Collider2D hit in hitPlayers)
         {
             if (hit.CompareTag("Player"))
@@ -56,8 +57,4 @@ public class SkeletonAttackState : EnemyState
         }
     }
 
-    public override void Exit()
-    {
-        base.Exit();
-    }
 }

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerPrimaryAttack : PlayerStates
@@ -25,8 +23,6 @@ public class PlayerPrimaryAttack : PlayerStates
         player.anim.SetInteger("ComboCounter", comboCounter);
 
         player.SetVelocity(player.AttackMovement[comboCounter].x * player.Facedir, player.AttackMovement[comboCounter].y);
-        Debug.Log(comboCounter);
-
         statestime = .1f;
 
     }
@@ -41,7 +37,7 @@ public class PlayerPrimaryAttack : PlayerStates
         if (comboCounter > 2)
             comboCounter = 0;
 
-        player.StartCoroutine("BusyFor", .15f);
+        player.StartCoroutine(player.BusyFor(.15f));
     }
 
     public override void Update()
@@ -59,9 +55,8 @@ public class PlayerPrimaryAttack : PlayerStates
     private void ApplyAttackDamage()
     {
         Vector2 attackPos = (Vector2)player.transform.position + Vector2.right * player.Facedir * 1.2f;
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPos, player.attackRadius);
-
-        Debug.Log("Attack check at " + attackPos + " radius " + player.attackRadius + " found " + hitEnemies.Length + " colliders");
+        int layerMask = LayerMask.GetMask("Default", "Enemy");
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPos, player.attackRadius, layerMask);
 
         bool hitSomething = false;
         foreach (Collider2D hit in hitEnemies)
@@ -69,13 +64,22 @@ public class PlayerPrimaryAttack : PlayerStates
             Enemy enemy = hit.GetComponent<Enemy>();
             if (enemy != null)
             {
-                Debug.Log("Hit enemy: " + enemy.name);
                 enemy.Damage(1f);
+                hitSomething = true;
+            }
+
+            BreakableDoorTilemap door = hit.GetComponent<BreakableDoorTilemap>();
+            if (door != null)
+            {
+                door.HitArea(attackPos, player.attackRadius);
                 hitSomething = true;
             }
         }
 
         if (hitSomething)
+        {
             player.HitStop(0.05f);
+            player.ScreenShake();
+        }
     }
 }

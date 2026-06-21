@@ -27,6 +27,8 @@ public class Enemy : MonoBehaviour
     protected bool facingRight = true;
     public bool isDead { get; protected set; }
 
+    public System.Action OnDied;
+
     #region Components
     public Animator anim { get; private set; }
     public Rigidbody2D rb { get; private set; }
@@ -55,12 +57,29 @@ public class Enemy : MonoBehaviour
         var sr = GetComponentInChildren<SpriteRenderer>();
         if (sr != null && sr.GetComponent<DamageFlash>() == null)
             sr.gameObject.AddComponent<DamageFlash>();
+
+        // Put enemy on its own layer so they can overlap with player and each other
+        SetupEnemyLayer();
+    }
+
+    private void SetupEnemyLayer()
+    {
+        int enemyLayer = LayerMask.NameToLayer("Enemy");
+        SetLayerRecursively(gameObject, enemyLayer);
+        Physics2D.IgnoreLayerCollision(enemyLayer, LayerMask.NameToLayer("Default"), true);
+        Physics2D.IgnoreLayerCollision(enemyLayer, enemyLayer, true);
+    }
+
+    private void SetLayerRecursively(GameObject obj, int layer)
+    {
+        obj.layer = layer;
+        foreach (Transform child in obj.transform)
+            SetLayerRecursively(child.gameObject, layer);
     }
 
     public void FindPlayer()
     {
-        Player p = FindObjectOfType<Player>();
-        player = p?.transform;
+        player = Player.Instance?.transform;
     }
 
     protected virtual void Update()
@@ -164,6 +183,8 @@ public class Enemy : MonoBehaviour
     public virtual void Die()
     {
         isDead = true;
+        OnDied?.Invoke();
+        OnDied = null;
     }
 
     public virtual void DestroyAfterDelay(float delay)

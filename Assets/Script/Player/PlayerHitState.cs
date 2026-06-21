@@ -14,7 +14,10 @@ public class PlayerHitState : PlayerStates
 
         // Knockback in the attack direction (away from attacker)
         float dir = player.lastHitKnockbackDirX;
-        player.rb.velocity = new Vector2(dir * player.knockbackForceX, player.knockbackForceY);
+
+        // 尖刺伤害（dir == 0）已在 Player.TakeSpikeDamage 中传送，跳过 knockback
+        if (dir != 0)
+            player.rb.velocity = new Vector2(dir * player.knockbackForceX, player.knockbackForceY);
         player.StartCoroutine(player.BusyFor(0.3f));
 
         // Flash sprite red

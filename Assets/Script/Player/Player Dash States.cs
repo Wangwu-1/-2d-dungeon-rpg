@@ -1,9 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerDashStates : PlayerStates
 {
+    private const string JumpAnimBool = "Jump";
+
     private int ghostSpawnCounter;
 
     public PlayerDashStates(Player _plater, PlayerStatesMachine _statemachine, string _animBoolName) : base(_plater, _statemachine, _animBoolName)
@@ -16,7 +16,7 @@ public class PlayerDashStates : PlayerStates
 
         // 从 WallJump 转来时，"Jump" 动画 bool 没有被清除（WallJump.Exit 跳过了 base.Exit）
         // 必须手动关掉，否则动画机会卡在 Jump/坠落动画上不播放 Dash
-        player.anim.SetBool("Jump", false);
+        player.anim.SetBool(JumpAnimBool, false);
 
         // 保证角色面朝 dash 方向
         if (player.DashDirection != player.Facedir)

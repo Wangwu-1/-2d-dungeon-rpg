@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerStates 
@@ -38,6 +36,8 @@ public class PlayerStates
 
     public virtual void Update()
     {
+        if (player.isTransitioning)
+            return;
 
         statestime -= Time.deltaTime;
 

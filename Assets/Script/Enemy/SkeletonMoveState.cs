@@ -27,17 +27,11 @@ public class SkeletonMoveState : EnemyState
 
         if (!skeleton.IsGroundDetected() || skeleton.IsWallDetected())
         {
-            Debug.Log("Skeleton hit edge/wall, flipping back to idle");
             skeleton.Flip();
             stateMachine.ChangeState(skeleton.idleState);
             return;
         }
 
         skeleton.SetVelocity(skeleton.moveSpeed * skeleton.facingDir, rb.velocity.y);
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
     }
 }

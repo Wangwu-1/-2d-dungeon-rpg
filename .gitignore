@@ -8,7 +8,7 @@
 [Uu]ser[Ss]ettings/
 [Mm]emoryCaptures/
 
-# VS
+# VS / IDE
 .vs/
 *.csproj
 *.unityproj
@@ -18,9 +18,20 @@
 *.userprefs
 *.pidb
 *.booproj
+
+# Rider
+*.idea/
+*.sln.docstates
+
 # Mono
 mono_crash.*
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+
+# Build artifacts
+build_verify.log

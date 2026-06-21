@@ -46,9 +46,4 @@ public class SkeletonDeathState : EnemyState
         if (isAnimationFinished && stateTimer < 0)
             skeleton.DestroySelf();
     }
-
-    public override void Exit()
-    {
-        base.Exit();
-    }
 }

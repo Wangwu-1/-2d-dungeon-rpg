@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Cinemachine;
 
 public class Player : MonoBehaviour
 {
@@ -11,6 +10,7 @@ public class Player : MonoBehaviour
     [Header("Health")]
     public float maxHealth = 5;
     [HideInInspector] public float currentHealth;
+    public event System.Action<float, float> OnHealthChanged;
     [Header("Invincibility")]
     public float invincibleDuration = 0.5f;
     [HideInInspector] public bool isInvincible { get; private set; }
@@ -24,12 +24,40 @@ public class Player : MonoBehaviour
     public float knockbackForceY = 3f;
 
     [Header("Screen Shake")]
-    [SerializeField] private CinemachineImpulseSource impulseSource;
+    [SerializeField] private float shakeDuration = 0.15f;
+    [SerializeField] private float shakeMagnitude = 0.3f;
 
     public bool IsBusy { get; private set; }
+    [HideInInspector] public bool isTransitioning;
     [HideInInspector] public float lastHitKnockbackDirX;
+    private Vector2 _lastSafePosition;
 
-    public void SetImpulseSource(CinemachineImpulseSource source) => impulseSource = source;
+    public static Player Instance { get; private set; }
+
+    public void ScreenShake()
+    {
+        StartCoroutine(ShakeRoutine());
+    }
+
+    private IEnumerator ShakeRoutine()
+    {
+        Camera cam = Camera.main;
+        if (cam == null) yield break;
+
+        Vector3 originalPos = cam.transform.position;
+        float elapsed = 0f;
+
+        while (elapsed < shakeDuration)
+        {
+            float x = Random.Range(-1f, 1f) * shakeMagnitude;
+            float y = Random.Range(-1f, 1f) * shakeMagnitude;
+            cam.transform.position = originalPos + new Vector3(x, y, 0);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        cam.transform.position = originalPos;
+    }
 
     [Header("Move info")]
     public float MoveSpeed = 12f;
@@ -45,18 +73,22 @@ public class Player : MonoBehaviour
     [Header("WallJump info")]
     public float wallJumpForceX = 5f;
 
+    [Header("Movement Smoothing")]
+    public float accelerationRate = 12f;
+    public float decelerationRate = 18f;
+    public float airAccelMultiplier = 0.5f;
+
 
 
     [Header("collision info")]
-    [SerializeField] private Transform Groundcheck;
-    [SerializeField] private float GroundCheckdistence;
     [SerializeField] private Transform Wallcheck;
     [SerializeField] private float WallCheckdistence;
-    [SerializeField] private LayerMask WhatIsGround;
     [SerializeField] private LayerMask WhatIsWall;
 
     public int Facedir { get; private set; } = 1;
     private bool Faceright = true;
+    private int _platformLayerIndex = -1;
+    private HashSet<Collider2D> _groundContacts = new HashSet<Collider2D>();
 
     #region Component
     public Animator anim { get; private set; }
@@ -85,6 +117,8 @@ public class Player : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
+
         statesmachine    = new PlayerStatesMachine();
 
         idleStates       = new PlayeridleStates(this, statesmachine,"Idle");
@@ -113,19 +147,11 @@ public class Player : MonoBehaviour
         cd = GetComponent<Collider2D>();
 
         currentHealth = maxHealth;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        _lastSafePosition = transform.position;
         statesmachine.Initialize(idleStates);
 
-        // Setup screen shake
-        var cam = Camera.main;
-        if (cam != null && cam.GetComponent<CinemachineImpulseListener>() == null)
-            cam.gameObject.AddComponent<CinemachineImpulseListener>();
-
-        if (impulseSource == null)
-        {
-            impulseSource = GetComponent<CinemachineImpulseSource>();
-            if (impulseSource == null)
-                impulseSource = gameObject.AddComponent<CinemachineImpulseSource>();
-        }
+        _platformLayerIndex = LayerMask.NameToLayer("Platform");
     }
 
     private void Update()
@@ -133,6 +159,8 @@ public class Player : MonoBehaviour
         statesmachine.currentStates.Update();
 
         CheckOnDashInput();
+
+        TrackSafePosition();
 
     }
 
@@ -205,8 +233,58 @@ public class Player : MonoBehaviour
         FlipControllor(_xvelocity);
     }
 
+    /// <summary>
+    /// 指数趋近式水平移动：vel.x = lerp(vel.x, targetX, 1 - exp(-rate * dt))
+    /// rate 越大加速越快，适用于有惯性的手感
+    /// </summary>
+    public void SetVelocityXExponential(float targetX, float rate)
+    {
+        float lerpFactor = 1 - Mathf.Exp(-rate * Time.deltaTime);
+        float newX = Mathf.Lerp(rb.velocity.x, targetX, lerpFactor);
 
-    public bool IsGroundDetected() => Physics2D.Raycast(Groundcheck.position, Vector2.down, GroundCheckdistence, WhatIsGround);
+        // 接近目标时直接归位，防止微漂移
+        if (Mathf.Abs(newX - targetX) < 0.1f)
+            newX = targetX;
+
+        rb.velocity = new Vector2(newX, rb.velocity.y);
+        FlipControllor(newX);
+    }
+
+
+    public bool IsGroundDetected()
+    {
+        return _groundContacts.Count > 0;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        int layer = collision.gameObject.layer;
+        bool isGround = layer == 3; // Ground (Layer 3)
+        bool isPlatform = _platformLayerIndex != -1 && layer == _platformLayerIndex;
+        if (!isGround && !isPlatform) return;
+
+        foreach (ContactPoint2D contact in collision.contacts)
+        {
+            if (contact.normal.y > 0.5f)
+            {
+                // Platform 层：需在表面上方 + 非上升状态
+                if (isPlatform && rb.velocity.y > 0.05f)
+                    continue;
+
+                _groundContacts.Add(collision.collider);
+                return;
+            }
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        int layer = collision.gameObject.layer;
+        bool isGround = layer == 3;
+        bool isPlatform = _platformLayerIndex != -1 && layer == _platformLayerIndex;
+        if (isGround || isPlatform)
+            _groundContacts.Remove(collision.collider);
+    }
     public bool IsWallDetected()
     {
         Collider2D col = cd;
@@ -216,10 +294,10 @@ public class Player : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
-        Gizmos.DrawLine(Groundcheck.position, new Vector3(Groundcheck.position.x, Groundcheck.position.y - GroundCheckdistence));
         Collider2D col = GetComponent<Collider2D>();
         if (col != null)
         {
+            Gizmos.color = Color.white;
             Bounds bounds = col.bounds;
             Vector2 origin = new Vector2(bounds.center.x + bounds.extents.x * Facedir, bounds.center.y);
             Gizmos.DrawLine(origin, origin + Vector2.right * Facedir * WallCheckdistence);
@@ -252,10 +330,8 @@ public class Player : MonoBehaviour
         if (isInvincible || isDead) return;
 
         currentHealth -= _damage;
-        Debug.Log("Player HP: " + currentHealth + "/" + maxHealth);
-
-        if (impulseSource != null)
-            impulseSource.GenerateImpulse();
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        ScreenShake();
 
         if (currentHealth <= 0)
         {
@@ -277,6 +353,40 @@ public class Player : MonoBehaviour
         isInvincible = true;
         yield return new WaitForSeconds(invincibleDuration);
         isInvincible = false;
+    }
+
+    private void TrackSafePosition()
+    {
+        if (IsGroundDetected() && !isInvincible && !isDead)
+            _lastSafePosition = transform.position;
+    }
+
+    public void TakeSpikeDamage(float damage)
+    {
+        if (isInvincible || isDead) return;
+
+        currentHealth -= damage;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        ScreenShake();
+
+        if (currentHealth <= 0)
+        {
+            isDead = true;
+            rb.velocity = Vector2.zero;
+            rb.gravityScale = 0;
+            this.enabled = false;
+        }
+        else
+        {
+            // 传送回安全位置
+            transform.position = _lastSafePosition;
+            rb.velocity = Vector2.zero;
+
+            // 标记为尖刺伤害，HitState 跳过 knockback
+            lastHitKnockbackDirX = 0;
+            StartCoroutine(InvincibilityFrames());
+            statesmachine.ChangeStates(hitState);
+        }
     }
 
 }

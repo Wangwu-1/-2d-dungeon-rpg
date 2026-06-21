@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerJumpStates : PlayerAirStates
@@ -14,17 +12,9 @@ public class PlayerJumpStates : PlayerAirStates
         rb.velocity = new Vector2(rb.velocity.x, player.Jumpforce);
     }
 
-    public override void Exit()
-    {
-        base.Exit();
-    }
-
     public override void Update()
     {
-        base.Update();
-
-        Xinput = Input.GetAxisRaw("Horizontal");
-        player.SetVelocity(Xinput * player.MoveSpeed, rb.velocity.y);
+        base.Update(); // 水平移动由 AirStates 的指数加速处理
 
         // Variable jump height: cut upward speed when Space released
         if (!Input.GetKey(KeyCode.Space) && rb.velocity.y > 0)

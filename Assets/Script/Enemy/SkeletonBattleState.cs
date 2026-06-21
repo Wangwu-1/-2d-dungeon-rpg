@@ -61,9 +61,4 @@ public class SkeletonBattleState : EnemyState
 
         skeleton.SetVelocity(skeleton.facingDir * skeleton.moveSpeed * 1.3f, rb.velocity.y);
     }
-
-    public override void Exit()
-    {
-        base.Exit();
-    }
 }

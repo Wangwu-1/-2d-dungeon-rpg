@@ -22,20 +22,13 @@ public class SkeletonIdleState : EnemyState
 
         if (skeleton.IsPlayerDetected())
         {
-            Debug.Log("Skeleton detected player, entering battle state");
             stateMachine.ChangeState(skeleton.battleState);
             return;
         }
 
         if (stateTimer < 0)
         {
-            Debug.Log("Skeleton idle time over, moving");
             stateMachine.ChangeState(skeleton.moveState);
         }
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
     }
 }

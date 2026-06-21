@@ -42,8 +42,6 @@ public class SkeletonEnemy : Enemy
         if (isDead) return;
 
         currentHealth -= _damage;
-        Debug.Log("Skeleton HP: " + currentHealth + "/" + maxHealth);
-
         if (currentHealth <= 0)
         {
             stateMachine.ChangeState(deathState);
