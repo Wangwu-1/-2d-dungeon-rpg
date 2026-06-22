@@ -29,6 +29,12 @@ public class PlayerAirStates : PlayerStates
         player.SetVelocityXExponential(targetX, rate);
 
         if (player.IsGroundDetected())
-            statemachine.ChangeStates(player.idleStates);
+        {
+            // 落地时有输入 → 直接切 Move，跳过 Idle 帧，避免抽搐感
+            if (Xinput != 0)
+                statemachine.ChangeStates(player.Movementstates);
+            else
+                statemachine.ChangeStates(player.idleStates);
+        }
     }
 }
