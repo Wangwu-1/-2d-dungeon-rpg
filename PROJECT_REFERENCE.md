@@ -491,3 +491,23 @@ player.SetVelocity(0, rb.velocity.y);
 - Animator Controller 新增 `isHeavyAttack` bool 参数 + `Wizard_attack2` 状态
   - AnyState 跳转优先级：`isDead > isHit > isAttacking+isHeavyAttack(Attack2) > isAttacking(Attack1)`
 - `Exit()` 时清除 `isHeavyAttack` 防止污染下一状态
+
+---
+
+### 2026-06-22 — Parallax 视差效果 + 修复移动抽搐 Idle bug
+
+**改了啥：**
+- 新建 `Assets/Script/Effects/ParallaxEffect.cs` — 通用视差组件
+  - `parallaxFactor` (0~1)：0=贴屏幕不动（无限远），1=随世界不视差
+  - `horizontalOnly`：侧滚式锁定垂直视差
+  - `LateUpdate` 自动追踪 `Camera.main` 偏移
+  - 使用 `cameraStartPosition` 计算偏移，修复上一版错误比较相机与图层位置的问题
+
+**修复 bug：** 移动时突然抽搐到 Idle 一帧
+- **根因：** `PlayerAirStates` 落地时固定 `ChangeStates(idleStates)`，若地面检测短暂丢失再恢复，走 `Move→Air→Idle→Move` 链，Idle 那帧可见
+- **修复：** `PlayerAirStates` 落地时检查 `Xinput != 0`，有输入直接切 `Movementstates`，无输入才切 `idleStates`
+
+**视觉章节更新：**
+| 文件 | 说明 |
+|------|------|
+| `Assets/Script/Effects/ParallaxEffect.cs` | 视差效果，挂到 Sprite 上配置 factor 即可 |
