@@ -1,0 +1,38 @@
+# Normalize detected text; binary Unity assets remain binary.
+* text=auto
+
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.editorconfig text eol=lf
+
+*.cs text eol=lf
+*.shader text eol=lf
+*.hlsl text eol=lf
+*.cginc text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.meta text eol=lf
+*.unity text eol=lf
+*.prefab text eol=lf
+*.asset text=auto eol=lf
+*.mat text=auto eol=lf
+*.anim text=auto eol=lf
+*.controller text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.psd binary
+*.pdf binary
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.mp4 binary
+*.ttf binary
+*.otf binary
+*.fbx binary
+*.unitypackage binary

@@ -1,0 +1,49 @@
+name: "问题报告"
+description: "报告可复现的运行、配置或文档问题。"
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "请先搜索已有 Issue。日志、截图和录屏请去除凭证与个人信息。"
+  - type: input
+    id: environment
+    attributes:
+      label: "环境与版本"
+      description: "游戏问题填写 Unity 完整版本、操作系统和分支或提交；文档问题可填页面路径。"
+      placeholder: "Unity 2022.3.62f3c1 / Windows / master @ 提交号"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "复现步骤"
+      description: "说明场景、前置条件和操作顺序。"
+      placeholder: |
+        1. 打开场景……
+        2. 进入 Play Mode……
+        3. 执行……
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "预期行为"
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: "实际行为"
+      description: "说明出现频率，以及是否能在重新打开项目后复现。"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: "日志、截图或补充信息"
+      description: "如有 Console 报错，请提供完整错误和堆栈；可拖入相关截图或录屏。"
+  - type: textarea
+    id: verification
+    attributes:
+      label: "已做的排查"
+      description: "分别说明静态检查与 Unity 实际运行的结果；没有执行时填写“未执行”。"
